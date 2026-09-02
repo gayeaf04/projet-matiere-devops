@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: llama-chat
+data:
+  OLLAMA_BASE_URL: "http://ollama.llama-chat.svc.cluster.local:11434"
