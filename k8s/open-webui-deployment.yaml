@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui-deployment
+  namespace: llama-chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      containers:
+      - name: open-webui-service
+        image: ghcr.io/open-webui/open-webui:v0.11.3
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "1.5Gi"
+            cpu: "1500m"
+        ports:
+        - containerPort: 8080
+
+        volumeMounts:
+          - name: open-webui-volume
+            mountPath: /app/backend/data
+
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8080"
+        - name: OLLAMA_BASE_URL          
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OLLAMA_BASE_URL 
+        - name: RAG_EMBEDDING_MODEL
+          value: ""
+        - name: ENABLE_RAG_LOCAL_WEB_FETCH
+          value: "False"
+        
+        startupProbe:
+          httpGet:
+            port: 8080
+            path: /healthz
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 60
+        
+        readinessProbe:
+          httpGet:
+            port: 8080
+            path: /healthz
+          periodSeconds: 5
+          failureThreshold: 2
+
+        livenessProbe:
+          httpGet:
+            port: 8080
+            path: /healthz
+          periodSeconds: 10
+          failureThreshold: 3
+
+      volumes: 
+        - name: open-webui-volume
+          persistentVolumeClaim:
+            claimName: open-webui-pvc
