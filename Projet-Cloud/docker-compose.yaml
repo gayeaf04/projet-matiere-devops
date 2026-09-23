@@ -1,0 +1,11 @@
+services:
+  floci:
+    image: floci/floci:2.1.0
+    ports:
+      - "${FLOCI_HOST_PORT}:4566"
+    environment:
+     - "AWS_ENDPOINT_URL=http://localhost:4566"
+     - "AWS_ACCESS_KEY_ID=test" 
+     - "AWS_SECRET_ACCESS_KEY=test"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
